@@ -1,35 +1,17 @@
 import Head from 'next/head'
-import Image from 'next/image'
-
-import { gql } from "@apollo/client";
+import { GetStaticProps } from 'next'
+import { useEffect, useState } from 'react';
+import { Input } from '@chakra-ui/react';
 import client from "../apollo-client";
-
+import InfoCard from '../components/InfoCard';
+import { pastLaunches } from '../graphql/queries';
+import { Launch } from '../types/Launch';
 import styles from '../styles/Home.module.css'
 
-export async function getStaticProps() {
+export const getStaticProps: GetStaticProps = async () => {
   const { data } = await client.query({
-    query: gql`
-      query PastLaunches {
-        launchesPast(limit: 10) {
-          mission_name
-          launch_date_local
-          launch_site {
-            site_name_long
-          }
-          links {
-            article_link
-            video_link
-          }
-          ships {
-            name
-            home_port
-            image
-          }
-        }
-      }
-    `,
+    query: pastLaunches
   });
-  
   return {
     props: {
       pastLaunches: data.launchesPast,
@@ -37,7 +19,16 @@ export async function getStaticProps() {
  };
 }
 
-export default function Home({pastLaunches}) {
+type PropsType = {
+  pastLaunches: Array<Launch>
+}
+
+export default function Home({ pastLaunches }: PropsType) {
+  const [launches, setLaunches] = useState<Array<Launch>>(pastLaunches);
+  const [searchKey, setSearchKey] = useState<string>('');
+  useEffect(() => {
+
+  }, [searchKey])
   return (
     <div className={styles.container}>
       <Head>
@@ -46,7 +37,8 @@ export default function Home({pastLaunches}) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        {pastLaunches.map((launch:any) => <div key={launch.mission_name}>{launch.mission_name}</div>)}
+        <Input onChange={(e) => setSearchKey(e.target.value)}/>
+        {launches.map((launch:Launch) => <InfoCard key={launch.mission_name} data={launch} />)}
       </main>
     </div>
   )
