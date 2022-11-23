@@ -1,34 +1,43 @@
-import Head from 'next/head'
-import { GetStaticProps } from 'next'
-import { useEffect, useState } from 'react';
-import { Input } from '@chakra-ui/react';
+import React from 'react';
+import Head from 'next/head';
+import { GetStaticProps } from 'next';
+import { useCallback, useEffect, useState } from 'react';
+import { Input, Spinner, Text } from '@chakra-ui/react';
+import debounce from 'lodash.debounce';
+
 import client from "../apollo-client";
 import InfoCard from '../components/InfoCard';
-import { pastLaunches } from '../graphql/queries';
+import { PAST_LAUNCHES } from '../graphql/queries';
 import { Launch } from '../types/Launch';
 import styles from '../styles/Home.module.css'
+import { useQuery } from '@apollo/client';
+import DataView from '../components/DataView';
 
-export const getStaticProps: GetStaticProps = async () => {
-  const { data } = await client.query({
-    query: pastLaunches
-  });
-  return {
-    props: {
-      pastLaunches: data.launchesPast,
-    },
- };
-}
-
+// export const getStaticProps: GetStaticProps = async () => {
+//   const { data } = await client.query({
+//     query: pastLaunches
+//   });
+//   return {
+//     props: {
+//       pastLaunches: data.launchesPast,
+//     },
+//  };
+// }
 type PropsType = {
-  pastLaunches: Array<Launch>
+  initialPastLaunches: Array<Launch>
 }
 
-export default function Home({ pastLaunches }: PropsType) {
-  const [launches, setLaunches] = useState<Array<Launch>>(pastLaunches);
+export default function Home({ initialPastLaunches }: PropsType) {
   const [searchKey, setSearchKey] = useState<string>('');
-  useEffect(() => {
+  const { loading, error, data } = useQuery(PAST_LAUNCHES, {
+    variables: { missionName: searchKey },
+  });
 
-  }, [searchKey])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedChangeHandler = useCallback(debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchKey(e.target.value)
+  }, 500),[]);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -37,8 +46,15 @@ export default function Home({ pastLaunches }: PropsType) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <Input onChange={(e) => setSearchKey(e.target.value)}/>
-        {launches.map((launch:Launch) => <InfoCard key={launch.mission_name} data={launch} />)}
+        <Input onChange={debouncedChangeHandler}/>
+        {loading && <Spinner
+          thickness='4px'
+          speed='0.65s'
+          emptyColor='gray.200'
+          color='blue.500'
+          size='xl'
+        /> }
+        {!loading && !error && <DataView data={data.launchesPast} />}
       </main>
     </div>
   )
