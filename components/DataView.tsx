@@ -1,4 +1,4 @@
-import { Text } from '@chakra-ui/react';
+import { Container, Text, SimpleGrid, GridItem } from '@chakra-ui/react';
 import React from 'react'
 import { Launch } from '../types/Launch'
 import InfoCard from './InfoCard';
@@ -11,8 +11,8 @@ export default function DataView(props: PropsType) {
     return <Text>No result</Text>
   }
   return (
-    <div>
-      {data.map((launch:Launch) => <InfoCard key={launch.mission_name} data={launch} />)}
-    </div>
+    <SimpleGrid gap={8} maxW={'full'} paddingX="0" paddingY='5' minChildWidth='xs'>
+      {data.map((launch:Launch) => <InfoCard  key={launch.mission_name} data={launch} />)}
+    </SimpleGrid>
   )
 }

@@ -16,18 +16,18 @@ type PropsType = {
 
 export default function InfoCard(props: PropsType) {
   const { data } = props;
-  console.log("data",data)
   return (
-    <Card maxW='md'>
+    <Card maxW='100%'>
       <Image
         objectFit='cover'
         src={data.links.mission_patch}
+        height={'sm'}
         alt='Chakra UI'
       />
       <CardBody>
         <Heading size='md'>{data.mission_name}</Heading>
         <Text mb={2} size='sm' color={'gray'} fontStyle='italic'>{data.launch_date_local}</Text>
-        <Text>
+        <Text noOfLines={6}>
           {data.details}
         </Text>
       </CardBody>
