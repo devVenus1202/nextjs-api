@@ -1,36 +1,24 @@
 import React from 'react';
 import Head from 'next/head';
-import { GetStaticProps } from 'next';
-import { useCallback, useEffect, useState } from 'react';
-import { Center, Container, Input, Spinner, Text } from '@chakra-ui/react';
+import { useCallback, useState } from 'react';
+import { Box, Center, Container, Flex, Heading, Input, InputGroup, InputLeftElement, Spinner, Text } from '@chakra-ui/react';
+import { SearchIcon } from '@chakra-ui/icons'
 import debounce from 'lodash.debounce';
 
-import client from "../apollo-client";
-import InfoCard from '../components/InfoCard';
 import { PAST_LAUNCHES } from '../graphql/queries';
-import { Launch } from '../types/Launch';
 import styles from '../styles/Home.module.css'
 import { useQuery } from '@apollo/client';
 import DataView from '../components/DataView';
 
-// export const getStaticProps: GetStaticProps = async () => {
-//   const { data } = await client.query({
-//     query: pastLaunches
-//   });
-//   return {
-//     props: {
-//       pastLaunches: data.launchesPast,
-//     },
-//  };
-// }
-type PropsType = {
-  initialPastLaunches: Array<Launch>
-}
-
-export default function Home({ initialPastLaunches }: PropsType) {
+const LIMIT_NUMBER = 60;
+export default function Home() {
   const [searchKey, setSearchKey] = useState<string>('');
   const { loading, error, data } = useQuery(PAST_LAUNCHES, {
-    variables: { missionName: searchKey },
+    variables: { 
+      missionName: searchKey,
+      limit: LIMIT_NUMBER,
+      offset: 0
+    },
   });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,14 +34,26 @@ export default function Home({ initialPastLaunches }: PropsType) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Container maxW={'full'} >
-        <Input onChange={debouncedChangeHandler}/>
-        {loading && <Spinner
-          thickness='4px'
-          speed='0.65s'
-          emptyColor='gray.200'
-          color='blue.500'
-          size='xl'
-        /> }
+        <Heading marginY={'1rem'} size={'xl'}>Past launches by SpaceX(archie test)</Heading>
+        <InputGroup width="100%" maxW="sm">
+          <InputLeftElement
+            pointerEvents='none'
+            children={<SearchIcon color='gray.300' />}
+          />
+          <Input onChange={debouncedChangeHandler} placeholder="Search launchs by mission name"/>
+        </InputGroup>
+        {loading && (
+          <Center h="12rem">
+            <Spinner
+              margin="auto"
+              thickness="4px"
+              speed="0.65s"
+              emptyColor="gray.200"
+              color="blue.500"
+              size="xl"
+            />
+          </Center>)
+        }
         {!loading && !error && <DataView data={data.launchesPast} />}
       </Container>
     </div>
