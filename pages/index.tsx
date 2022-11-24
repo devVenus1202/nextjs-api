@@ -1,3 +1,4 @@
+/* eslint-disable react/no-children-prop */
 import React from 'react';
 import Head from 'next/head';
 import { useCallback, useState } from 'react';
